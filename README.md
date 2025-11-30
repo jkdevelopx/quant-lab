@@ -47,6 +47,7 @@ Built entirely in Python with zero external backtesting dependencies (pure panda
 
 ## Strategy Builder (No Code Required)
 You define your rules like this:
+``` bash 
 Buy when ALL of these are true:
 ☑ RSI < 30 (Oversold)
 ☑ Price > SMA 20
@@ -56,6 +57,7 @@ Sell when ANY of these are true:
 ☑ Price < SMA 20
 ☑ MACD < Signal Line
 Change any checkbox → backtest updates instantly.
+``` 
 
 ## Example Performance (NVDA • 2 Years • Nov 2023 – Nov 2025)
 ``` bash 
@@ -91,6 +93,7 @@ Try it now: https://jkdevelopx-quant-lab.streamlit.app
 
 **Built with passion by [jkdevelopx](https://github.com/jkdevelopx)**  
 November 2025  
+</div>
 
 **Open to opportunities in:**
 - Quantitative Research
@@ -101,4 +104,4 @@ November 2025
 
 Feel free to reach out: LinkedIn • Discord • Email in profile
 
-</div>
+
