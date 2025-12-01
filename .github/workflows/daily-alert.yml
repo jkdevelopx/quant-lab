@@ -1,0 +1,26 @@
+name: AlphaSignal Daily Alert
+on:
+  schedule:
+    - cron: '0 1 * * *'      # ทุกวัน 08:00 น. (เวลาไทย)
+  workflow_dispatch:        # รันด้วยมือได้
+
+jobs:
+  send-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          pip install streamlit yfinance pandas numpy plotly requests pyyaml
+      
+      - name: Run AlphaSignal (headless)
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBOB }}
+        run: |
+          streamlit run streamlit_app.py --server.headless true --server.enableCORS false --server.enableXsrfProtection false
