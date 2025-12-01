@@ -1,4 +1,4 @@
-JEXA — AI-Powered Trading Intelligence
+#JEXA — AI-Powered Trading Intelligence
 ══════════════════════════════════════════════════════════
 
 Yeah, it's finally here.
@@ -7,7 +7,7 @@ A dead-simple, stupidly fast, insanely accurate trading research tool I built fo
 
 Live demo → (i will update once deployed)
 
-What it does (no bullshit)
+##What it does (no bullshit)
 ══════════════════════════════════════════════════════════
 • Scans 18 US stocks + 8 cryptos every day with LightGBM
 • Only shows signals I would actually trade (>60% confidence)
@@ -16,7 +16,7 @@ What it does (no bullshit)
 • Apple-level dark UI because I got tired of ugly Streamlit apps
 • One-click CSV export for my trade journal
 
-Stack (nothing fancy, just works)
+##Stack (nothing fancy, just works)
 ══════════════════════════════════════════════════════════
 - Streamlit (because who has time for React)
 - yfinance (free data = happy wallet)
@@ -24,25 +24,25 @@ Stack (nothing fancy, just works)
 - Plotly (charts that don't make me want to cry)
 - Python only. No Docker. No bullshit.
 
-Run it locally in 30 seconds
+##Run it locally in 30 seconds
 ══════════════════════════════════════════════════════════
 git clone https://github.com/jkdevelopx/quant-lab.git
 cd quant-lab
 pip install -r requirements.txt
 streamlit run streamlit_app.py
 
-Want alerts in Discord?
+##Want alerts in Discord?
 ══════════════════════════════════════════════════════════
 1. Right-click channel → Create Webhook
 2. Paste URL into discord_alert.py
 3. Click "SCAN" → profit (or loss, your choice)
 
-Current watchlist (feel free to hate or copy)
+##Current watchlist (feel free to hate or copy)
 ══════════════════════════════════════════════════════════
 NVDA, TSLA, AAPL, AMD, SMCI, META, MSFT, GOOGL, AMZN
 BTC-USD, ETH-USD, SOL-USD, COIN, HOOD, PLTR, MARA, RIOT
 
-Disclaimer (gotta say it)
+##Disclaimer (gotta say it)
 ══════════════════════════════════════════════════════════
 This is my personal tool. Not financial advice.
 I'm not your financial advisor. I'm just a guy who got tired of losing money.
