@@ -1,6 +1,6 @@
 # ============================================================================
-# JEXA - Professional Trading Platform
-# Expert UX/UI Design with Beautiful Color Palette
+# JEXA - UNIFIED DASHBOARD (Better UX)
+# Decision-First Design: Show What Matters, When It Matters
 # ============================================================================
 
 import streamlit as st
@@ -14,251 +14,182 @@ from assets import ALL_ASSETS, STOCKS, CRYPTO, CATEGORIES, WATCHLISTS
 from scanner import StockScanner
 from ml_engine import get_ml_signal, scan_market, find_next_nvda
 
-# ============================================================================
-# PAGE CONFIG
-# ============================================================================
-
-st.set_page_config(
-    page_title="JEXA - AI Trading",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+st.set_page_config(page_title="JEXA", page_icon="📈", layout="wide")
 
 # ============================================================================
-# PROFESSIONAL COLOR SYSTEM (20+ Years UX/UI Expertise)
+# PREMIUM COLOR SYSTEM
 # ============================================================================
 
 COLORS = {
-    # Primary Palette
-    'primary': '#0066FF',      # Vibrant blue - actions, links
-    'primary_dark': '#0052CC',
-    'primary_light': '#3385FF',
-    
-    # Success/Bull
-    'success': '#00C48C',      # Teal green - bullish signals
-    'success_bg': '#E6F9F4',
-    'success_dark': '#00A075',
-    
-    # Danger/Bear  
-    'danger': '#FF5757',       # Coral red - bearish signals
-    'danger_bg': '#FFE9E9',
-    'danger_dark': '#E63946',
-    
-    # Warning
-    'warning': '#FFB020',      # Amber - caution
-    'warning_bg': '#FFF7E6',
-    
-    # Neutral Grays
-    'text_primary': '#1A202C',     # Almost black
-    'text_secondary': '#4A5568',   # Medium gray
-    'text_tertiary': '#A0AEC0',    # Light gray
-    
-    # Backgrounds
-    'bg_primary': '#FFFFFF',
-    'bg_secondary': '#F7FAFC',
-    'bg_tertiary': '#EDF2F7',
-    'border': '#E2E8F0',
-    
-    # Chart Colors
-    'chart_bull': '#00C48C',
-    'chart_bear': '#FF5757',
-    'chart_line1': '#0066FF',
-    'chart_line2': '#8B5CF6',   # Purple
-    'chart_line3': '#F59E0B',   # Orange
-    'chart_grid': '#F1F5F9',
+    'bull': '#10B981',
+    'bear': '#EF4444',
+    'neutral': '#6B7280',
+    'primary': '#0A84FF',
+    'bg': '#FFFFFF',
+    'text': '#1F2937',
+    'border': '#E5E7EB',
 }
-
-# ============================================================================
-# EXPERT UX/UI STYLING
-# ============================================================================
 
 st.markdown(f"""
 <style>
-    /* === FOUNDATION === */
-    .main {{
-        background-color: {COLORS['bg_primary']};
-        color: {COLORS['text_primary']};
+    .main {{background: {COLORS['bg']}; color: {COLORS['text']};}}
+    .block-container {{padding: 2rem 3rem; max-width: 1800px;}}
+    
+    /* Decision Card - The Star of the Show */
+    .decision-card {{
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        padding: 2.5rem;
+        color: white;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        margin-bottom: 2rem;
     }}
     
-    .block-container {{
-        padding-top: 1rem;
-        padding-bottom: 3rem;
-        max-width: 1400px;
-    }}
-    
-    /* === TYPOGRAPHY === */
-    h1 {{
-        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: {COLORS['text_primary']};
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.03em;
-        line-height: 1.1;
-    }}
-    
-    h2, h3 {{
-        color: {COLORS['text_primary']};
+    .decision-title {{
+        font-size: 1.25rem;
         font-weight: 600;
-        letter-spacing: -0.02em;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
     }}
     
-    .subtitle {{
-        font-size: 1.125rem;
-        color: {COLORS['text_secondary']};
-        font-weight: 400;
-        margin-bottom: 2.5rem;
+    .decision-signal {{
+        font-size: 4rem;
+        font-weight: 800;
+        margin: 1rem 0;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }}
     
-    /* === METRIC CARDS === */
-    .metric-card {{
-        background: {COLORS['bg_secondary']};
+    .decision-confidence {{
+        font-size: 1.5rem;
+        font-weight: 600;
+        opacity: 0.95;
+    }}
+    
+    .decision-action {{
+        font-size: 1rem;
+        opacity: 0.85;
+        margin-top: 1rem;
+        font-weight: 500;
+    }}
+    
+    /* Signal Strength Bar */
+    .signal-bar {{
+        height: 12px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 100px;
+        margin: 1.5rem 0;
+        overflow: hidden;
+    }}
+    
+    .signal-fill {{
+        height: 100%;
+        background: white;
+        border-radius: 100px;
+        transition: width 0.5s ease;
+    }}
+    
+    /* Mini Indicator Cards */
+    .mini-card {{
+        background: white;
         border-radius: 16px;
-        padding: 1.75rem;
-        border: 1px solid {COLORS['border']};
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        border: 2px solid {COLORS['border']};
+        text-align: center;
+        transition: all 0.3s ease;
     }}
     
-    .metric-card:hover {{
+    .mini-card:hover {{
         border-color: {COLORS['primary']};
         transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 102, 255, 0.15);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }}
     
-    .metric-value {{
-        font-size: 2.25rem;
-        font-weight: 700;
-        color: {COLORS['text_primary']};
-        margin-bottom: 0.5rem;
-        line-height: 1;
+    .mini-card.bullish {{
+        border-color: {COLORS['bull']};
+        background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
     }}
     
-    .metric-value.positive {{
-        color: {COLORS['success']};
+    .mini-card.bearish {{
+        border-color: {COLORS['bear']};
+        background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
     }}
     
-    .metric-value.negative {{
-        color: {COLORS['danger']};
-    }}
-    
-    .metric-label {{
+    .mini-label {{
         font-size: 0.875rem;
-        color: {COLORS['text_secondary']};
+        color: {COLORS['neutral']};
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }}
+    
+    .mini-value {{
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+    }}
+    
+    .mini-status {{
+        font-size: 0.875rem;
         font-weight: 600;
     }}
     
-    /* === BUTTONS === */
+    /* Unified Chart Container */
+    .chart-container {{
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid {COLORS['border']};
+        margin-top: 2rem;
+    }}
+    
+    /* Action Buttons */
     .stButton>button {{
-        background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         border-radius: 12px;
-        padding: 0.875rem 2rem;
+        padding: 1rem 2rem;
         font-weight: 600;
         font-size: 1rem;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
     }}
     
     .stButton>button:hover {{
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 102, 255, 0.4);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
     }}
     
-    .stButton>button:active {{
-        transform: translateY(0);
-    }}
-    
-    /* === INPUTS === */
-    .stSelectbox, .stTextInput {{
-        background: white;
-    }}
-    
-    .stSelectbox > div > div {{
-        background: {COLORS['bg_secondary']};
-        border: 1px solid {COLORS['border']};
-        border-radius: 8px;
-    }}
-    
-    /* === DIVIDER === */
-    hr {{
-        border: none;
-        border-top: 1px solid {COLORS['border']};
-        margin: 2.5rem 0;
-        opacity: 0.6;
-    }}
-    
-    /* === SIDEBAR === */
-    [data-testid="stSidebar"] {{
-        background: {COLORS['bg_secondary']};
-        border-right: 1px solid {COLORS['border']};
-    }}
-    
-    /* === TABS === */
+    /* Clean Tabs */
     .stTabs [data-baseweb="tab-list"] {{
-        gap: 2.5rem;
-        border-bottom: 2px solid {COLORS['bg_tertiary']};
+        gap: 1rem;
+        border-bottom: 2px solid {COLORS['border']};
     }}
     
     .stTabs [data-baseweb="tab"] {{
-        padding: 0.75rem 0;
-        color: {COLORS['text_secondary']};
-        border-bottom: 3px solid transparent;
-        font-weight: 500;
-        font-size: 1rem;
-        transition: all 0.2s ease;
-    }}
-    
-    .stTabs [data-baseweb="tab"]:hover {{
-        color: {COLORS['primary']};
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: {COLORS['neutral']};
     }}
     
     .stTabs [aria-selected="true"] {{
         color: {COLORS['primary']};
-        border-bottom-color: {COLORS['primary']};
-        font-weight: 600;
+        border-bottom: 3px solid {COLORS['primary']};
     }}
     
-    /* === DATAFRAME === */
-    .stDataFrame {{
-        border: 1px solid {COLORS['border']};
-        border-radius: 12px;
-        overflow: hidden;
+    h1 {{
+        font-size: 3rem;
+        font-weight: 800;
+        color: {COLORS['text']};
+        margin-bottom: 0.5rem;
     }}
     
-    /* === EXPANDER === */
-    .streamlit-expanderHeader {{
-        background: {COLORS['bg_secondary']};
-        border-radius: 8px;
-        border: 1px solid {COLORS['border']};
-    }}
-    
-    /* === HIDE STREAMLIT BRANDING === */
-    #MainMenu {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
-    header {{visibility: hidden;}}
-    
-    /* === SIGNAL BADGES === */
-    .signal-badge {{
-        display: inline-block;
-        padding: 0.375rem 0.875rem;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }}
-    
-    .signal-buy {{
-        background: {COLORS['success_bg']};
-        color: {COLORS['success_dark']};
-    }}
-    
-    .signal-sell {{
-        background: {COLORS['danger_bg']};
-        color: {COLORS['danger_dark']};
+    .subtitle {{
+        font-size: 1.125rem;
+        color: {COLORS['neutral']};
+        margin-bottom: 2rem;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -268,338 +199,363 @@ st.markdown(f"""
 # ============================================================================
 
 st.markdown("<h1>JEXA</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>AI-Powered Trading Intelligence Platform</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Clear signals. Smart decisions. Better returns.</p>", unsafe_allow_html=True)
 
 # ============================================================================
 # TABS
 # ============================================================================
 
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Backtest", "🚀 Find Next NVDA", "🔍 Scanner", "⚡ Quick Signals"])
+tab1, tab2, tab3 = st.tabs(["📊 Analyze Asset", "🚀 Find Opportunities", "⚡ Quick Scan"])
 
 # ============================================================================
-# TAB 1: BACKTEST
+# TAB 1: UNIFIED ASSET ANALYSIS (NEW APPROACH)
 # ============================================================================
 
 with tab1:
-    st.markdown("### Strategy Backtesting")
-    
-    col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+    # Top Controls (Simplified)
+    col1, col2, col3 = st.columns([3, 2, 1])
     
     with col1:
-        search = st.text_input("🔍", placeholder="Search NVDA, AAPL, BTC...", label_visibility="collapsed")
+        search = st.text_input("Search", placeholder="Type NVDA, AAPL, BTC...", label_visibility="collapsed")
         filtered = {k: v for k, v in ALL_ASSETS.items() 
                    if search.upper() in k.upper() or search.lower() in v.lower()} if search else ALL_ASSETS
-        ticker = st.selectbox("Asset", list(filtered.keys()), format_func=lambda x: f"{x}", label_visibility="collapsed")
+        ticker = st.selectbox("Select Asset", list(filtered.keys()), format_func=lambda x: f"{x}", label_visibility="collapsed")
     
     with col2:
         period = st.selectbox("Period", ["1mo", "3mo", "6mo", "1y", "2y"], index=3)
     
     with col3:
-        timeframe = st.selectbox("Timeframe", ["1d", "1h", "30m"], index=0)
-    
-    with col4:
-        capital = st.number_input("Capital ($)", value=100000, step=10000)
-    
-    with st.expander("⚙️ Strategy Settings", expanded=False):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Entry Signals**")
-            rsi_buy = st.checkbox("RSI < 30", True)
-            sma_buy = st.checkbox("Price > SMA20", True)
-            macd_buy = st.checkbox("MACD > Signal", True)
-        
-        with col2:
-            st.markdown("**Exit Signals**")
-            rsi_sell = st.checkbox("RSI > 70", True)
-            sma_sell = st.checkbox("Price < SMA20", False)
-            macd_sell = st.checkbox("MACD < Signal", False)
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            risk = st.slider("Risk (%)", 0.5, 10.0, 2.0, 0.5)
-        with col2:
-            sl = st.slider("Stop Loss (%)", 2.0, 30.0, 10.0, 1.0)
-        with col3:
-            tp = st.slider("Take Profit (%)", 5.0, 100.0, 25.0, 5.0)
-    
-    if st.button("▶ Run Backtest", use_container_width=True, type="primary"):
-        with st.spinner(f"Backtesting {ticker}..."):
-            @st.cache_data(ttl=300)
-            def load_data(t, p, i):
-                df = yf.download(t, period=p, interval=i, progress=False, auto_adjust=True)
+        if st.button("🔍 Analyze", use_container_width=True, type="primary"):
+            with st.spinner(f"Analyzing {ticker}..."):
+                # Load Data
+                df = yf.download(ticker, period=period, progress=False, auto_adjust=True)
+                
                 if df.empty:
-                    st.error("No data")
+                    st.error("No data available")
                     st.stop()
+                
                 if isinstance(df.columns, pd.MultiIndex):
                     df.columns = df.columns.droplevel(1)
-                return df
-            
-            df = load_data(ticker, period, timeframe)
-            close, high, low = df["Close"], df["High"], df["Low"]
-            
-            # Indicators
-            sma20 = close.rolling(20).mean()
-            std20 = close.rolling(20).std()
-            upper_bb, lower_bb = sma20 + 2*std20, sma20 - 2*std20
-            
-            delta = close.diff()
-            gain = delta.where(delta>0, 0).rolling(14).mean()
-            loss = -delta.where(delta<0, 0).rolling(14).mean()
-            rsi = 100 - 100/(1 + gain/loss)
-            
-            macd_line = close.ewm(span=12, adjust=False).mean() - close.ewm(span=26, adjust=False).mean()
-            macd_sig = macd_line.ewm(span=9, adjust=False).mean()
-            
-            # Signals
-            buy, sell = pd.Series(False, index=df.index), pd.Series(False, index=df.index)
-            if rsi_buy: buy |= (rsi < 30)
-            if sma_buy: buy |= (close > sma20)
-            if macd_buy: buy |= (macd_line > macd_sig)
-            if rsi_sell: sell |= (rsi > 70)
-            if sma_sell: sell |= (close < sma20)
-            if macd_sell: sell |= (macd_line < macd_sig)
-            
-            # Backtest
-            position, capital_now, equity, trades = 0, capital, [capital], []
-            
-            for i in range(20, len(df)):
-                price = close.iloc[i]
-                if position == 0 and buy.iloc[i]:
-                    shares = (capital_now * risk/100) / (price * sl/100)
-                    if shares >= 0.001:
-                        position = shares
-                        stop_price, tp_price = price * (1 - sl/100), price * (1 + tp/100)
-                        capital_now -= shares * price
-                        trades.append({"type": "BUY", "time": df.index[i], "price": price})
-                elif position > 0:
-                    if price <= stop_price:
-                        capital_now += position * stop_price
-                        trades.append({"type": "STOP", "time": df.index[i], "price": stop_price})
-                        position = 0
-                    elif price >= tp_price:
-                        capital_now += position * tp_price
-                        trades.append({"type": "TP", "time": df.index[i], "price": tp_price})
-                        position = 0
-                    elif sell.iloc[i]:
-                        capital_now += position * price
-                        trades.append({"type": "SELL", "time": df.index[i], "price": price})
-                        position = 0
-                equity.append(capital_now + position*price)
-            
-            # Metrics
-            equity = np.array(equity)
-            total_ret = (equity[-1]/capital - 1) * 100
-            num_trades = len(trades) // 2
-            wins = len([t for t in trades if t["type"] in ["TP", "SELL"]])
-            win_rate = (wins / max(1, num_trades)) * 100
-            max_dd = ((np.maximum.accumulate(equity) - equity) / np.maximum.accumulate(equity)).max() * 100
-            
-            # Display
-            st.markdown("### Performance")
-            col1, col2, col3, col4, col5 = st.columns(5)
-            
-            with col1:
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>${equity[-1]:,.0f}</div><div class='metric-label'>Final Capital</div></div>", unsafe_allow_html=True)
-            with col2:
-                cls = 'positive' if total_ret > 0 else 'negative'
-                st.markdown(f"<div class='metric-card'><div class='metric-value {cls}'>{total_ret:+.1f}%</div><div class='metric-label'>Return</div></div>", unsafe_allow_html=True)
-            with col3:
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>{win_rate:.1f}%</div><div class='metric-label'>Win Rate</div></div>", unsafe_allow_html=True)
-            with col4:
-                st.markdown(f"<div class='metric-card'><div class='metric-value'>{num_trades}</div><div class='metric-label'>Trades</div></div>", unsafe_allow_html=True)
-            with col5:
-                st.markdown(f"<div class='metric-card'><div class='metric-value negative'>{max_dd:.1f}%</div><div class='metric-label'>Max DD</div></div>", unsafe_allow_html=True)
-            
-            st.markdown("---")
-            
-            # Chart: Price
-            st.markdown("### Price & Signals")
-            fig1 = go.Figure()
-            fig1.add_trace(go.Candlestick(
-                x=df.index, open=df.Open, high=high, low=low, close=close, name=ticker,
-                increasing_line_color=COLORS['chart_bull'], decreasing_line_color=COLORS['chart_bear']
-            ))
-            fig1.add_trace(go.Scatter(x=df.index, y=sma20, name="SMA20", line=dict(color=COLORS['chart_line1'], width=2)))
-            
-            buys = [t for t in trades if t["type"] == "BUY"]
-            exits = [t for t in trades if t["type"] != "BUY"]
-            
-            if buys:
-                fig1.add_trace(go.Scatter(
-                    x=[t["time"] for t in buys], y=[t["price"]*0.98 for t in buys],
-                    mode="markers", name="Buy", marker=dict(symbol="triangle-up", size=14, color=COLORS['success'])
-                ))
-            if exits:
-                fig1.add_trace(go.Scatter(
-                    x=[t["time"] for t in exits], y=[t["price"]*1.02 for t in exits],
-                    mode="markers", name="Exit", marker=dict(symbol="triangle-down", size=14, color=COLORS['danger'])
-                ))
-            
-            fig1.update_layout(
-                height=500, template="plotly_white", xaxis_rangeslider_visible=False,
-                margin=dict(l=0, r=0, t=30, b=0), paper_bgcolor='white', plot_bgcolor='white'
-            )
-            st.plotly_chart(fig1, use_container_width=True)
-            
-            # Chart: Indicators
-            st.markdown("### Technical Indicators")
-            fig2 = make_subplots(rows=3, cols=1, subplot_titles=("RSI", "MACD", "Bollinger %"), vertical_spacing=0.08)
-            
-            fig2.add_trace(go.Scatter(x=df.index, y=rsi, name="RSI", line=dict(color=COLORS['chart_line2'], width=2)), row=1, col=1)
-            fig2.add_hline(y=70, line_dash="dash", line_color=COLORS['danger'], line_width=1, row=1, col=1)
-            fig2.add_hline(y=30, line_dash="dash", line_color=COLORS['success'], line_width=1, row=1, col=1)
-            
-            fig2.add_trace(go.Scatter(x=df.index, y=macd_line, name="MACD", line=dict(color=COLORS['chart_line1'], width=2)), row=2, col=1)
-            fig2.add_trace(go.Scatter(x=df.index, y=macd_sig, name="Signal", line=dict(color=COLORS['chart_line3'], width=2)), row=2, col=1)
-            
-            bb_pct = (close - lower_bb) / (upper_bb - lower_bb)
-            fig2.add_trace(go.Scatter(x=df.index, y=bb_pct, name="BB%", line=dict(color=COLORS['chart_line1'], width=2)), row=3, col=1)
-            fig2.add_hline(y=1, line_dash="dash", line_color=COLORS['danger'], row=3, col=1)
-            fig2.add_hline(y=0, line_dash="dash", line_color=COLORS['success'], row=3, col=1)
-            
-            fig2.update_layout(height=600, template="plotly_white", showlegend=False, margin=dict(l=0, r=0, t=40, b=0))
-            st.plotly_chart(fig2, use_container_width=True)
-            
-            # Chart: Equity
-            st.markdown("### Equity Curve")
-            fig3 = go.Figure()
-            fig3.add_trace(go.Scatter(
-                y=equity, name="Strategy",
-                line=dict(color=COLORS['primary'], width=3),
-                fill='tozeroy', fillcolor=f"rgba(0, 102, 255, 0.1)"
-            ))
-            fig3.add_trace(go.Scatter(
-                y=close/close.iloc[0]*capital, name="Buy & Hold",
-                line=dict(color=COLORS['text_tertiary'], width=2, dash='dot')
-            ))
-            fig3.update_layout(height=350, template="plotly_white", margin=dict(l=0, r=0, t=20, b=0))
-            st.plotly_chart(fig3, use_container_width=True)
+                
+                close = df["Close"]
+                high, low = df["High"], df["Low"]
+                
+                # Calculate ALL indicators
+                sma20 = close.rolling(20).mean()
+                sma50 = close.rolling(50).mean()
+                
+                delta = close.diff()
+                gain = delta.where(delta > 0, 0).rolling(14).mean()
+                loss = -delta.where(delta < 0, 0).rolling(14).mean()
+                rsi = 100 - (100 / (1 + gain / loss))
+                
+                macd_line = close.ewm(span=12, adjust=False).mean() - close.ewm(span=26, adjust=False).mean()
+                macd_sig = macd_line.ewm(span=9, adjust=False).mean()
+                
+                std20 = close.rolling(20).std()
+                bb_upper = sma20 + 2 * std20
+                bb_lower = sma20 - 2 * std20
+                bb_pct = (close - bb_lower) / (bb_upper - bb_lower)
+                
+                # Get current values
+                current_price = close.iloc[-1]
+                current_rsi = rsi.iloc[-1]
+                current_macd = macd_line.iloc[-1]
+                current_macd_sig = macd_sig.iloc[-1]
+                current_bb = bb_pct.iloc[-1]
+                price_vs_sma20 = (current_price / sma20.iloc[-1] - 1) * 100
+                price_vs_sma50 = (current_price / sma50.iloc[-1] - 1) * 100
+                
+                # ======= DECISION LOGIC =======
+                signals = []
+                confidence = 50  # Base confidence
+                
+                # RSI Signal
+                if current_rsi < 30:
+                    signals.append("OVERSOLD")
+                    confidence += 15
+                elif current_rsi > 70:
+                    signals.append("OVERBOUGHT")
+                    confidence -= 15
+                elif 40 < current_rsi < 60:
+                    confidence += 10
+                
+                # Trend Signal
+                if price_vs_sma20 > 0 and price_vs_sma50 > 0:
+                    signals.append("UPTREND")
+                    confidence += 20
+                elif price_vs_sma20 < 0 and price_vs_sma50 < 0:
+                    signals.append("DOWNTREND")
+                    confidence -= 20
+                
+                # MACD Signal
+                if current_macd > current_macd_sig:
+                    signals.append("MOMENTUM+")
+                    confidence += 15
+                else:
+                    signals.append("MOMENTUM-")
+                    confidence -= 15
+                
+                # Final Decision
+                if confidence >= 70:
+                    decision = "STRONG BUY"
+                    decision_color = "#10B981"
+                    decision_emoji = "🚀"
+                    action = "Strong bullish signals. Consider buying."
+                elif confidence >= 55:
+                    decision = "BUY"
+                    decision_color = "#10B981"
+                    decision_emoji = "📈"
+                    action = "Moderately bullish. Suitable for entry."
+                elif confidence >= 45:
+                    decision = "HOLD"
+                    decision_color = "#6B7280"
+                    decision_emoji = "⏸️"
+                    action = "Neutral market. Wait for clearer signals."
+                elif confidence >= 30:
+                    decision = "SELL"
+                    decision_color = "#EF4444"
+                    decision_emoji = "📉"
+                    action = "Moderately bearish. Consider reducing position."
+                else:
+                    decision = "STRONG SELL"
+                    decision_color = "#EF4444"
+                    decision_emoji = "⚠️"
+                    action = "Strong bearish signals. Avoid or exit."
+                
+                confidence = max(0, min(100, confidence))
+                
+                # ======= DISPLAY: DECISION FIRST =======
+                
+                st.markdown(f"""
+                <div class='decision-card' style='background: linear-gradient(135deg, {decision_color} 0%, {decision_color}dd 100%);'>
+                    <div class='decision-title'>AI Decision for {ticker}</div>
+                    <div class='decision-signal'>{decision_emoji} {decision}</div>
+                    <div class='decision-confidence'>{confidence}% Confidence</div>
+                    <div class='signal-bar'>
+                        <div class='signal-fill' style='width: {confidence}%;'></div>
+                    </div>
+                    <div class='decision-action'>{action}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # ======= MINI INDICATORS (At a Glance) =======
+                
+                st.markdown("### Key Indicators")
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    rsi_status = "Oversold" if current_rsi < 30 else "Overbought" if current_rsi > 70 else "Neutral"
+                    rsi_class = "bullish" if current_rsi < 30 else "bearish" if current_rsi > 70 else ""
+                    st.markdown(f"""
+                    <div class='mini-card {rsi_class}'>
+                        <div class='mini-label'>RSI</div>
+                        <div class='mini-value'>{current_rsi:.0f}</div>
+                        <div class='mini-status'>{rsi_status}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col2:
+                    trend = "Bullish" if price_vs_sma20 > 0 else "Bearish"
+                    trend_class = "bullish" if price_vs_sma20 > 0 else "bearish"
+                    st.markdown(f"""
+                    <div class='mini-card {trend_class}'>
+                        <div class='mini-label'>Trend (SMA20)</div>
+                        <div class='mini-value'>{price_vs_sma20:+.1f}%</div>
+                        <div class='mini-status'>{trend}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col3:
+                    momentum = "Bullish" if current_macd > current_macd_sig else "Bearish"
+                    momentum_class = "bullish" if current_macd > current_macd_sig else "bearish"
+                    st.markdown(f"""
+                    <div class='mini-card {momentum_class}'>
+                        <div class='mini-label'>MACD</div>
+                        <div class='mini-value'>{current_macd:.2f}</div>
+                        <div class='mini-status'>{momentum}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col4:
+                    bb_status = "Lower Band" if current_bb < 0.2 else "Upper Band" if current_bb > 0.8 else "Middle"
+                    bb_class = "bullish" if current_bb < 0.2 else "bearish" if current_bb > 0.8 else ""
+                    st.markdown(f"""
+                    <div class='mini-card {bb_class}'>
+                        <div class='mini-label'>Bollinger</div>
+                        <div class='mini-value'>{current_bb:.2f}</div>
+                        <div class='mini-status'>{bb_status}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # ======= UNIFIED CHART (All-in-One) =======
+                
+                st.markdown("### Price & Indicators")
+                
+                # Create subplot with 4 rows
+                fig = make_subplots(
+                    rows=4, cols=1,
+                    row_heights=[0.5, 0.15, 0.15, 0.2],
+                    subplot_titles=("", "RSI", "MACD", "Volume"),
+                    vertical_spacing=0.03,
+                    shared_xaxes=True
+                )
+                
+                # Row 1: Price + Bollinger Bands + SMAs
+                fig.add_trace(go.Candlestick(
+                    x=df.index, open=df.Open, high=high, low=low, close=close,
+                    name=ticker,
+                    increasing_line_color='#10B981',
+                    decreasing_line_color='#EF4444'
+                ), row=1, col=1)
+                
+                fig.add_trace(go.Scatter(x=df.index, y=sma20, name="SMA20", 
+                                        line=dict(color='#0A84FF', width=2)), row=1, col=1)
+                fig.add_trace(go.Scatter(x=df.index, y=sma50, name="SMA50", 
+                                        line=dict(color='#8B5CF6', width=2)), row=1, col=1)
+                fig.add_trace(go.Scatter(x=df.index, y=bb_upper, name="BB Upper", 
+                                        line=dict(color='#E5E7EB', dash='dash', width=1)), row=1, col=1)
+                fig.add_trace(go.Scatter(x=df.index, y=bb_lower, name="BB Lower", 
+                                        line=dict(color='#E5E7EB', dash='dash', width=1),
+                                        fill='tonexty', fillcolor='rgba(229, 231, 235, 0.2)'), row=1, col=1)
+                
+                # Row 2: RSI
+                fig.add_trace(go.Scatter(x=df.index, y=rsi, name="RSI",
+                                        line=dict(color='#8B5CF6', width=2)), row=2, col=1)
+                fig.add_hline(y=70, line_dash="dash", line_color='#EF4444', line_width=1, row=2, col=1)
+                fig.add_hline(y=30, line_dash="dash", line_color='#10B981', line_width=1, row=2, col=1)
+                fig.add_hrect(y0=30, y1=70, fillcolor='#F3F4F6', opacity=0.3, line_width=0, row=2, col=1)
+                
+                # Row 3: MACD
+                fig.add_trace(go.Scatter(x=df.index, y=macd_line, name="MACD",
+                                        line=dict(color='#0A84FF', width=2)), row=3, col=1)
+                fig.add_trace(go.Scatter(x=df.index, y=macd_sig, name="Signal",
+                                        line=dict(color='#F59E0B', width=2)), row=3, col=1)
+                fig.add_hline(y=0, line_color='#E5E7EB', line_width=1, row=3, col=1)
+                
+                # Row 4: Volume
+                colors = ['#10B981' if close.iloc[i] > close.iloc[i-1] else '#EF4444' 
+                         for i in range(1, len(close))]
+                colors.insert(0, '#6B7280')
+                fig.add_trace(go.Bar(x=df.index, y=df.Volume, name="Volume",
+                                    marker_color=colors, showlegend=False), row=4, col=1)
+                
+                # Layout
+                fig.update_layout(
+                    height=1000,
+                    template="plotly_white",
+                    showlegend=True,
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    margin=dict(l=0, r=0, t=40, b=0),
+                    hovermode='x unified'
+                )
+                
+                fig.update_xaxes(showgrid=False)
+                fig.update_yaxes(showgrid=True, gridcolor='#F3F4F6')
+                
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # ======= TRADE RECOMMENDATION =======
+                
+                st.markdown("### Trade Recommendation")
+                
+                if confidence >= 70:
+                    st.success(f"""
+                    **Entry:** ${current_price:.2f}  
+                    **Stop Loss:** ${current_price * 0.95:.2f} (-5%)  
+                    **Take Profit:** ${current_price * 1.15:.2f} (+15%)  
+                    **Risk/Reward:** 1:3
+                    """)
+                elif confidence <= 30:
+                    st.error(f"""
+                    **Action:** Exit or avoid  
+                    **Current Price:** ${current_price:.2f}  
+                    **Support Level:** ${bb_lower.iloc[-1]:.2f}  
+                    **Resistance:** ${bb_upper.iloc[-1]:.2f}
+                    """)
+                else:
+                    st.info(f"""
+                    **Current Price:** ${current_price:.2f}  
+                    **Action:** Wait for clearer signals  
+                    **Next Support:** ${sma20.iloc[-1]:.2f}  
+                    **Next Resistance:** ${sma50.iloc[-1]:.2f}
+                    """)
 
 # ============================================================================
-# TAB 2: FIND NEXT NVDA
+# TAB 2: FIND OPPORTUNITIES
 # ============================================================================
 
 with tab2:
-    st.markdown("### 🚀 Find Next NVDA")
-    st.markdown("AI-powered scanner for high-potential stocks")
+    st.markdown("### 🚀 Find High-Potential Assets")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        market_filter = st.selectbox("Market", ["All Stocks", "AI/Semiconductors", "Tech Only", "Crypto"])
+        market = st.selectbox("Market", ["All Stocks", "AI & Semiconductors", "Crypto"])
     with col2:
-        min_confidence = st.slider("Min Confidence (%)", 60, 90, 70, 5)
+        min_conf = st.slider("Min Confidence", 60, 90, 70, 5)
     with col3:
-        max_analyze = st.number_input("Max Stocks", 10, 50, 20, 5)
+        max_scan = st.number_input("Max Scan", 10, 50, 20, 5)
     
-    if st.button("🔍 Find Opportunities", use_container_width=True, type="primary"):
-        if market_filter == "AI/Semiconductors":
+    if st.button("🔍 Scan Market", use_container_width=True, type="primary"):
+        if market == "AI & Semiconductors":
             symbols = CATEGORIES.get("AI & Semiconductors", [])
-        elif market_filter == "Tech Only":
-            symbols = CATEGORIES.get("Tech Giants", [])
-        elif market_filter == "Crypto":
+        elif market == "Crypto":
             symbols = list(CRYPTO.keys())
         else:
             symbols = list(STOCKS.keys())
         
-        with st.spinner(f"Analyzing {min(len(symbols), max_analyze)} assets..."):
-            results = find_next_nvda(symbols[:max_analyze], min_confidence=min_confidence/100)
-            
-            if results:
-                st.success(f"✅ Found {len(results)} high-potential opportunities!")
-                
-                st.markdown("### Top Picks")
-                
-                for i, r in enumerate(results[:10], 1):
-                    col1, col2, col3, col4, col5, col6 = st.columns([1, 2, 2, 2, 2, 2])
-                    
-                    with col1:
-                        emoji = "🔥" if r['nvda_score'] > 85 else "⭐" if r['nvda_score'] > 75 else "📈"
-                        st.markdown(f"### {emoji} #{i}")
-                    with col2:
-                        st.markdown(f"**{r['symbol']}**")
-                        st.caption("Symbol")
-                    with col3:
-                        st.markdown(f"**${r['price']:.2f}**")
-                        st.caption("Price")
-                    with col4:
-                        st.markdown(f"**{r['confidence']:.1%}**")
-                        st.caption("ML Confidence")
-                    with col5:
-                        st.markdown(f"**{r['nvda_score']:.0f}/100**")
-                        st.caption("Score")
-                    with col6:
-                        st.markdown(f"<span class='signal-badge signal-buy'>{r['direction']} ↗️</span>", unsafe_allow_html=True)
-                    
-                    st.markdown("---")
-            else:
-                st.warning("No opportunities found. Try lowering confidence.")
-
-# ============================================================================
-# TAB 3: SCANNER
-# ============================================================================
-
-with tab3:
-    st.markdown("### Market Scanner")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        scan_types = {"🚀 Momentum": "momentum", "📈 Trend": "trend", "💎 Oversold": "oversold", "⚡ Volume": "volume"}
-        scan_display = st.selectbox("Scan Type", list(scan_types.keys()))
-        scan_type = scan_types[scan_display]
-    with col2:
-        scan_market = st.selectbox("Market", ["Stocks", "Crypto", "Both"])
-    
-    if st.button("🔍 Run Scanner", use_container_width=True, type="primary"):
-        symbols = list(STOCKS.keys())[:50] if scan_market == "Stocks" else list(CRYPTO.keys()) if scan_market == "Crypto" else list(STOCKS.keys())[:30] + list(CRYPTO.keys())
-        
         with st.spinner("Scanning..."):
-            scanner = StockScanner(symbols)
-            results = scanner.scan(scan_type)
+            results = find_next_nvda(symbols[:max_scan], min_conf/100)
             
             if results:
                 st.success(f"Found {len(results)} opportunities!")
-                df = pd.DataFrame(results)
-                st.dataframe(df, use_container_width=True, height=400)
+                
+                for i, r in enumerate(results[:10], 1):
+                    col1, col2, col3, col4 = st.columns([1, 2, 2, 2])
+                    
+                    with col1:
+                        st.markdown(f"### #{i}")
+                    with col2:
+                        st.markdown(f"**{r['symbol']}**  \n${r['price']:.2f}")
+                    with col3:
+                        st.markdown(f"**{r['confidence']:.1%}** Confidence")
+                    with col4:
+                        st.markdown(f"**{r['nvda_score']:.0f}/100** Score")
+                    
+                    st.markdown("---")
             else:
-                st.info("No signals found")
+                st.warning("No opportunities found")
 
 # ============================================================================
-# TAB 4: QUICK SIGNALS
+# TAB 3: QUICK SCAN
 # ============================================================================
 
-with tab4:
+with tab3:
     st.markdown("### ⚡ Quick ML Signals")
-    st.markdown("Instant predictions for popular assets")
     
-    watchlist_name = st.selectbox("Watchlist", list(WATCHLISTS.keys()))
-    symbols = WATCHLISTS[watchlist_name]
+    watchlist = st.selectbox("Watchlist", list(WATCHLISTS.keys()))
+    symbols = WATCHLISTS[watchlist]
     
     if st.button("📡 Generate Signals", use_container_width=True, type="primary"):
-        with st.spinner(f"Analyzing {len(symbols)} assets..."):
+        with st.spinner("Analyzing..."):
             results = scan_market(symbols, max_results=len(symbols))
             
             if results:
-                st.success(f"✅ {len(results)} signals generated")
+                st.success(f"{len(results)} signals generated")
                 
                 for r in results:
-                    col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 2])
+                    col1, col2, col3, col4 = st.columns(4)
                     
                     with col1:
                         st.markdown(f"**{r['symbol']}**")
                     with col2:
                         st.markdown(f"${r['price']:.2f}")
                     with col3:
-                        badge_class = 'signal-buy' if r['direction'] == 'UP' else 'signal-sell'
-                        emoji = "📈" if r['direction'] == "UP" else "📉"
-                        st.markdown(f"<span class='signal-badge {badge_class}'>{emoji} {r['direction']}</span>", unsafe_allow_html=True)
+                        emoji = "📈" if r['direction'] == 'UP' else "📉"
+                        st.markdown(f"{emoji} {r['direction']}")
                     with col4:
                         st.markdown(f"{r['confidence']:.1%}")
-                        st.caption("Confidence")
-                    with col5:
-                        st.markdown(f"{r['model_accuracy']:.1%}")
-                        st.caption("Accuracy")
                     
                     st.markdown("---")
             else:
@@ -610,10 +566,8 @@ with tab4:
 # ============================================================================
 
 st.markdown("---")
-st.markdown(f"""
-<div style='text-align: center; color: {COLORS['text_tertiary']}; font-size: 0.875rem; padding: 2rem 0;'>
-    <p style='font-weight: 600; color: {COLORS['text_secondary']};'>JEXA</p>
-    <p>AI Trading Intelligence Platform</p>
-    <p style='margin-top: 0.5rem;'>Python • Streamlit • LightGBM • Machine Learning</p>
+st.markdown("""
+<div style='text-align: center; color: #9CA3AF; padding: 2rem;'>
+    <strong>JEXA</strong> | AI Trading Intelligence
 </div>
 """, unsafe_allow_html=True)
